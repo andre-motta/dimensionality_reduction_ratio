@@ -6,13 +6,13 @@ A professional Python toolkit for estimating the intrinsic dimensionality of dat
 
 ```bash
 # Process all datasets from configuration file
-python main.py --batch datasets.txt
+python main.py batch datasets.txt
 
 # Process a single dataset
-python main.py --single data/config/Apache_AllMeasurements.csv
+python main.py single data/config/Apache_AllMeasurements.csv
 
 # Use custom parameters with debug logging
-python main.py --batch datasets.txt --max-samples 5000 --log-level DEBUG
+python main.py --log-level DEBUG batch datasets.txt --max-samples 5000 --metric euclidean
 ```
 
 ## 📋 Table of Contents
@@ -75,7 +75,7 @@ The **intrinsic dimension** of a dataset is the minimum number of parameters nee
 
 ### Prerequisites
 - Python 3.8+
-- Required packages: `pandas`, `numpy`, `scipy`, `matplotlib`
+- pip (Python package installer)
 
 ### Setup
 ```bash
@@ -84,12 +84,20 @@ git clone https://github.com/andre-motta/dimensionality_reduction_ratio.git
 cd dimensionality_reduction_ratio
 
 # Install dependencies
-pip install pandas numpy scipy matplotlib
+pip install -r requirements.txt
 
 # Verify installation
 cd src
 python main.py --help
 ```
+
+### Dependencies
+This project uses the following key libraries:
+- **Click**: Modern command-line interface framework
+- **NumPy**: Numerical computing library
+- **Pandas**: Data manipulation and analysis
+- **SciPy**: Scientific computing library
+- **Matplotlib**: Plotting library
 
 ## 📖 Usage
 
@@ -98,33 +106,44 @@ python main.py --help
 #### Batch Processing
 Process multiple datasets from a configuration file:
 ```bash
-python main.py --batch datasets.txt
+python main.py batch datasets.txt
 ```
 
 With custom parameters:
 ```bash
-python main.py --batch datasets.txt \
+python main.py --log-level DEBUG batch datasets.txt \
     --max-samples 5000 \
     --metric euclidean \
-    --data-root data \
-    --log-level DEBUG \
-    --log-file logs/processing.log
+    --data-root data
 ```
 
 #### Single Dataset Processing
 Process an individual dataset:
 ```bash
-python main.py --single data/config/Apache_AllMeasurements.csv
+python main.py single data/config/Apache_AllMeasurements.csv
 ```
 
-#### Available Options
-- `--batch`, `-b`: Configuration file for batch processing
-- `--single`, `-s`: Single dataset file path
-- `--max-samples`: Maximum samples for large datasets (default: 2000)
-- `--metric`: Distance metric (`l1`, `l2`, `euclidean`, `manhattan`, `cosine`)
-- `--data-root`: Root directory for dataset files (default: `data`)
+With custom parameters:
+```bash
+python main.py single data/config/Apache_AllMeasurements.csv \
+    --max-samples 3000 \
+    --metric manhattan
+```
+
+#### Global Options
 - `--log-level`: Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`)
 - `--log-file`: Optional log file path
+
+#### Batch Command Options
+- `datasets_file`: Path to configuration file listing datasets to process
+- `--data-root`: Root directory for dataset files (default: `../data`)
+- `--max-samples`: Maximum samples for large datasets (default: 2000)
+- `--metric`: Distance metric (`l1`, `l2`, `euclidean`, `manhattan`, `cosine`)
+
+#### Single Command Options  
+- `dataset_path`: Path to the dataset file to process
+- `--max-samples`: Maximum samples for large datasets (default: 2000)
+- `--metric`: Distance metric (`l1`, `l2`, `euclidean`, `manhattan`, `cosine`)
 
 ### Python API
 
@@ -135,7 +154,7 @@ from src.data_processor import DataProcessor
 
 # Initialize components
 processor = DataProcessor()
-estimator = IntrinsicDimensionEstimator(max_samples=2000)
+estimator = IntrinsicDimensionEstimator(max_samples=2000, distance_metric='euclidean')
 
 # Process dataset
 data, metadata = processor.process_dataset('data/config/Apache_AllMeasurements.csv')
@@ -154,7 +173,7 @@ from src.batch_processor import BatchProcessor
 processor = BatchProcessor(
     results_file="results/my_results.csv",
     max_samples=2000,
-    distance_metric='l1'
+    distance_metric='manhattan'
 )
 
 # Process all datasets
@@ -263,10 +282,15 @@ dimensionality_reduction_ratio/
 ```bash
 # Test single dataset (from src directory)
 cd src
-python main.py --single ../data/optimize/config/SS-A.csv
+python main.py single ../data/optimize/config/SS-A.csv
 
 # Test batch processing (small subset)
-python main.py --batch ../config/test_datasets.txt
+python main.py batch ../config/test_dataset.txt
+
+# Test help functionality
+python main.py --help
+python main.py batch --help
+python main.py single --help
 ```
 
 ---
