@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/andre-motta/dimensionality_reduction_ratio/workflows/CI/badge.svg)](https://github.com/andre-motta/dimensionality_reduction_ratio/actions)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Unlicense](https://img.shields.io/badge/License-Unlicense-blue.svg)](http://unlicense.org/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Coverage: 82%](https://img.shields.io/badge/coverage-82%25-brightgreen.svg)](https://github.com/andre-motta/dimensionality_reduction_ratio/actions)
 
