@@ -43,9 +43,7 @@ class IntrinsicDimensionEstimator:
         num_radii (int): Number of radius values for correlation function (default: 100)
     """
 
-    def __init__(
-        self, max_samples: int = 2000, distance_metric: str = "l1", num_radii: int = 100
-    ):
+    def __init__(self, max_samples: int = 2000, distance_metric: str = "l1", num_radii: int = 100):
         """
         Initialize the intrinsic dimension estimator.
 
@@ -96,9 +94,7 @@ class IntrinsicDimensionEstimator:
         Raises:
             ValueError: If data is invalid or has insufficient samples
         """
-        logger.info(
-            f"Starting intrinsic dimension estimation for data shape {data.shape}"
-        )
+        logger.info(f"Starting intrinsic dimension estimation for data shape {data.shape}")
 
         # Validate input
         if not isinstance(data, np.ndarray):
@@ -113,10 +109,7 @@ class IntrinsicDimensionEstimator:
         # Handle large datasets with sampling
         original_size = data.shape[0]
         if original_size > self.max_samples:
-            logger.warning(
-                f"Dataset is large ({original_size} samples). "
-                f"Sampling {self.max_samples} for estimation"
-            )
+            logger.warning(f"Dataset is large ({original_size} samples). " f"Sampling {self.max_samples} for estimation")
             np.random.seed(42)  # For reproducibility
             indices = np.random.choice(original_size, self.max_samples, replace=False)
             data = data[indices]
@@ -129,16 +122,12 @@ class IntrinsicDimensionEstimator:
             distances = self._compute_pairwise_distances(data)
 
             # Calculate correlation function and gradients
-            intrinsic_dim = self._estimate_from_correlation_function(
-                distances, original_dims
-            )
+            intrinsic_dim = self._estimate_from_correlation_function(distances, original_dims)
 
             # Calculate DRR
             drr = 1 - (intrinsic_dim / original_dims)
 
-            logger.info(
-                f"Estimation complete: R={original_dims}, I={intrinsic_dim}, DRR={drr:.3f}"
-            )
+            logger.info(f"Estimation complete: R={original_dims}, I={intrinsic_dim}, DRR={drr:.3f}")
 
             return original_dims, intrinsic_dim, drr
 
@@ -160,9 +149,7 @@ class IntrinsicDimensionEstimator:
         Returns:
             1D array of pairwise distances
         """
-        logger.debug(
-            f"Computing {self.distance_metric} pairwise distances for {data.shape[0]} samples"
-        )
+        logger.debug(f"Computing {self.distance_metric} pairwise distances for {data.shape[0]} samples")
 
         if self.distance_metric == "l1":
             distances = pdist(data, "cityblock")
@@ -177,15 +164,12 @@ class IntrinsicDimensionEstimator:
             raise ValueError("No valid distances found")
 
         logger.debug(
-            f"Computed {len(distances)} valid distances, "
-            f"range: [{np.min(distances):.6f}, {np.max(distances):.6f}]"
+            f"Computed {len(distances)} valid distances, " f"range: [{np.min(distances):.6f}, {np.max(distances):.6f}]"
         )
 
         return distances
 
-    def _estimate_from_correlation_function(
-        self, distances: np.ndarray, original_dims: int
-    ) -> int:
+    def _estimate_from_correlation_function(self, distances: np.ndarray, original_dims: int) -> int:
         """
         Estimate intrinsic dimension using correlation function analysis.
 
@@ -236,15 +220,11 @@ class IntrinsicDimensionEstimator:
         log_gradients = self._calculate_log_log_gradients(correlation_values, radii)
 
         # Determine intrinsic dimension based on dataset characteristics
-        intrinsic_dim = self._select_intrinsic_dimension(
-            gradients, log_gradients, original_dims
-        )
+        intrinsic_dim = self._select_intrinsic_dimension(gradients, log_gradients, original_dims)
 
         return intrinsic_dim
 
-    def _calculate_gradients(
-        self, correlation_values: np.ndarray, radii: np.ndarray
-    ) -> np.ndarray:
+    def _calculate_gradients(self, correlation_values: np.ndarray, radii: np.ndarray) -> np.ndarray:
         """Calculate gradients of correlation function."""
         gradients = []
         for i in range(1, len(correlation_values)):
@@ -256,9 +236,7 @@ class IntrinsicDimensionEstimator:
 
         return np.array(gradients)
 
-    def _calculate_log_log_gradients(
-        self, correlation_values: np.ndarray, radii: np.ndarray
-    ) -> np.ndarray:
+    def _calculate_log_log_gradients(self, correlation_values: np.ndarray, radii: np.ndarray) -> np.ndarray:
         """Calculate log-log gradients of correlation function."""
         try:
             log_correlation = np.log(correlation_values + 1e-15)
@@ -268,9 +246,7 @@ class IntrinsicDimensionEstimator:
             for i in range(1, len(log_correlation)):
                 d_log_r = log_radii[i] - log_radii[i - 1]
                 if abs(d_log_r) > 1e-15:
-                    log_gradient = (
-                        log_correlation[i] - log_correlation[i - 1]
-                    ) / d_log_r
+                    log_gradient = (log_correlation[i] - log_correlation[i - 1]) / d_log_r
                     if np.isfinite(log_gradient):
                         log_gradients.append(log_gradient)
 
@@ -279,9 +255,7 @@ class IntrinsicDimensionEstimator:
             logger.debug(f"Error calculating log-log gradients: {e}")
             return np.array([])
 
-    def _select_intrinsic_dimension(
-        self, gradients: np.ndarray, log_gradients: np.ndarray, original_dims: int
-    ) -> int:
+    def _select_intrinsic_dimension(self, gradients: np.ndarray, log_gradients: np.ndarray, original_dims: int) -> int:
         """
         Select the best intrinsic dimension estimate based on dataset characteristics.
 
@@ -294,34 +268,22 @@ class IntrinsicDimensionEstimator:
         )
 
         if len(gradients) > 0:
-            logger.debug(
-                f"Regular gradient range: [{np.min(gradients):.6f}, {np.max(gradients):.6f}]"
-            )
+            logger.debug(f"Regular gradient range: [{np.min(gradients):.6f}, {np.max(gradients):.6f}]")
         if len(log_gradients) > 0:
-            logger.debug(
-                f"Log gradient range: [{np.min(log_gradients):.6f}, {np.max(log_gradients):.6f}]"
-            )
+            logger.debug(f"Log gradient range: [{np.min(log_gradients):.6f}, {np.max(log_gradients):.6f}]")
 
         # Dataset type heuristics
         if original_dims <= 6:
             # Small datasets - likely configuration data (expect high DRR)
-            return self._estimate_for_config_dataset(
-                gradients, log_gradients, original_dims
-            )
+            return self._estimate_for_config_dataset(gradients, log_gradients, original_dims)
         elif original_dims > 15:
             # Large datasets - likely behavior data (expect low DRR)
-            return self._estimate_for_behavior_dataset(
-                gradients, log_gradients, original_dims
-            )
+            return self._estimate_for_behavior_dataset(gradients, log_gradients, original_dims)
         else:
             # Medium datasets - use balanced approach
-            return self._estimate_for_medium_dataset(
-                gradients, log_gradients, original_dims
-            )
+            return self._estimate_for_medium_dataset(gradients, log_gradients, original_dims)
 
-    def _estimate_for_config_dataset(
-        self, gradients: np.ndarray, log_gradients: np.ndarray, original_dims: int
-    ) -> int:
+    def _estimate_for_config_dataset(self, gradients: np.ndarray, log_gradients: np.ndarray, original_dims: int) -> int:
         """Estimate intrinsic dimension for configuration datasets (expect high correlation)."""
         if len(log_gradients) > 0:
             # Use middle range median for stability
@@ -332,9 +294,7 @@ class IntrinsicDimensionEstimator:
                 median_val = np.median(middle_gradients)
                 if 0.1 < abs(median_val) < 50:
                     result = max(1, round(abs(median_val)))
-                    logger.debug(
-                        f"Config dataset: using log median {median_val:.3f} -> {result}"
-                    )
+                    logger.debug(f"Config dataset: using log median {median_val:.3f} -> {result}")
                     return result
 
         # Fallback for config datasets - expect high dimensionality reduction
@@ -342,17 +302,13 @@ class IntrinsicDimensionEstimator:
         logger.debug(f"Config dataset: using fallback {result}")
         return result
 
-    def _estimate_for_behavior_dataset(
-        self, gradients: np.ndarray, log_gradients: np.ndarray, original_dims: int
-    ) -> int:
+    def _estimate_for_behavior_dataset(self, gradients: np.ndarray, log_gradients: np.ndarray, original_dims: int) -> int:
         """Estimate intrinsic dimension for behavior datasets (expect low correlation)."""
         if len(log_gradients) > 0:
             max_log_gradient = np.max(np.abs(log_gradients))
             if original_dims * 0.5 < max_log_gradient < original_dims * 2:
                 result = max(1, round(max_log_gradient))
-                logger.debug(
-                    f"Behavior dataset: using log max {max_log_gradient:.3f} -> {result}"
-                )
+                logger.debug(f"Behavior dataset: using log max {max_log_gradient:.3f} -> {result}")
                 return result
 
         # Fallback for behavior datasets - expect low dimensionality reduction
@@ -360,17 +316,13 @@ class IntrinsicDimensionEstimator:
         logger.debug(f"Behavior dataset: using fallback {result}")
         return result
 
-    def _estimate_for_medium_dataset(
-        self, gradients: np.ndarray, log_gradients: np.ndarray, original_dims: int
-    ) -> int:
+    def _estimate_for_medium_dataset(self, gradients: np.ndarray, log_gradients: np.ndarray, original_dims: int) -> int:
         """Estimate intrinsic dimension for medium-sized datasets."""
         if len(log_gradients) > 0:
             median_val = np.median(np.abs(log_gradients))
             if 1 < median_val < original_dims:
                 result = max(1, round(median_val))
-                logger.debug(
-                    f"Medium dataset: using log median {median_val:.3f} -> {result}"
-                )
+                logger.debug(f"Medium dataset: using log median {median_val:.3f} -> {result}")
                 return result
 
         # Fallback for medium datasets

@@ -55,9 +55,7 @@ class BatchProcessor:
             distance_metric: Distance metric for estimation
         """
         self.data_processor = DataProcessor()
-        self.estimator = IntrinsicDimensionEstimator(
-            max_samples=max_samples, distance_metric=distance_metric
-        )
+        self.estimator = IntrinsicDimensionEstimator(max_samples=max_samples, distance_metric=distance_metric)
 
         self.results_file = results_file
         self.error_log_file = error_log_file
@@ -66,14 +64,9 @@ class BatchProcessor:
         os.makedirs(os.path.dirname(results_file), exist_ok=True)
         os.makedirs(os.path.dirname(error_log_file), exist_ok=True)
 
-        logger.info(
-            f"Initialized BatchProcessor: results={results_file}, "
-            f"errors={error_log_file}"
-        )
+        logger.info(f"Initialized BatchProcessor: results={results_file}, " f"errors={error_log_file}")
 
-    def process_datasets_from_file(
-        self, datasets_file: str, data_root: str = "data"
-    ) -> Dict[str, Any]:
+    def process_datasets_from_file(self, datasets_file: str, data_root: str = "data") -> Dict[str, Any]:
         """
         Process all datasets listed in a configuration file.
 
@@ -94,11 +87,7 @@ class BatchProcessor:
 
         # Check for existing results to resume processing
         already_processed = self._get_processed_datasets()
-        remaining_datasets = [
-            config
-            for config in dataset_configs
-            if config["name"] not in already_processed
-        ]
+        remaining_datasets = [config for config in dataset_configs if config["name"] not in already_processed]
 
         logger.info(f"Already processed: {len(already_processed)} datasets")
         logger.info(f"Remaining to process: {len(remaining_datasets)} datasets")
@@ -123,9 +112,7 @@ class BatchProcessor:
 
         for i, config in enumerate(remaining_datasets, 1):
             logger.info(f"\n{'='*60}")
-            logger.info(
-                f"Processing dataset {i}/{len(remaining_datasets)}: {config['name']}"
-            )
+            logger.info(f"Processing dataset {i}/{len(remaining_datasets)}: {config['name']}")
             logger.info(f"Path: {config['path']}")
             logger.info(f"{'='*60}")
 
@@ -198,14 +185,10 @@ class BatchProcessor:
                     # Subsection (e.g., "behavior_data", "config")
                     current_subsection = line
                     logger.debug(f"Found subsection: {current_subsection}")
-                elif (
-                    indent_level == 8 and current_section and current_subsection
-                ):  # Second level (8 spaces)
+                elif indent_level == 8 and current_section and current_subsection:  # Second level (8 spaces)
                     # Actual dataset entry
                     dataset_name = line
-                    dataset_path = (
-                        f"{current_section}/{current_subsection}/{dataset_name}"
-                    )
+                    dataset_path = f"{current_section}/{current_subsection}/{dataset_name}"
 
                     datasets.append(
                         {
@@ -300,9 +283,7 @@ class BatchProcessor:
             self._log_error(dataset_name, error_msg, traceback.format_exc())
             return False
 
-    def _save_result_to_csv(
-        self, dataset_name: str, original_dims: int, intrinsic_dim: int, drr: float
-    ):
+    def _save_result_to_csv(self, dataset_name: str, original_dims: int, intrinsic_dim: int, drr: float):
         """Save processing result to CSV file."""
         result_row = [
             dataset_name,
@@ -323,9 +304,7 @@ class BatchProcessor:
 
         logger.debug(f"Saved result for {dataset_name} to {self.results_file}")
 
-    def _log_error(
-        self, dataset_name: str, error_message: str, traceback_str: Optional[str] = None
-    ):
+    def _log_error(self, dataset_name: str, error_message: str, traceback_str: Optional[str] = None):
         """Log error to error log file."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 

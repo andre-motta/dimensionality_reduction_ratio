@@ -41,14 +41,9 @@ class DataProcessor:
         self.max_rows_for_processing = max_rows_for_processing
         self.random_seed = random_seed
 
-        logger.info(
-            f"Initialized DataProcessor with max_rows={max_rows_for_processing}, "
-            f"seed={random_seed}"
-        )
+        logger.info(f"Initialized DataProcessor with max_rows={max_rows_for_processing}, " f"seed={random_seed}")
 
-    def process_dataset(
-        self, data: Union[pd.DataFrame, np.ndarray, str]
-    ) -> Tuple[np.ndarray, dict]:
+    def process_dataset(self, data: Union[pd.DataFrame, np.ndarray, str]) -> Tuple[np.ndarray, dict]:
         """
         Process a dataset for intrinsic dimension estimation.
 
@@ -88,10 +83,7 @@ class DataProcessor:
 
         # Apply early sampling for very large datasets
         if data.shape[0] > self.max_rows_for_processing:
-            logger.warning(
-                f"Dataset is very large ({data.shape[0]} rows). "
-                f"Sampling {self.max_rows_for_processing} rows"
-            )
+            logger.warning(f"Dataset is very large ({data.shape[0]} rows). " f"Sampling {self.max_rows_for_processing} rows")
             data = self._sample_data(data)
             metadata["sampling_applied"] = True
             metadata["sampled_shape"] = data.shape
@@ -101,9 +93,7 @@ class DataProcessor:
         metadata["goal_variables_removed"] = goal_vars
 
         if data.shape[1] == 0:
-            raise ValueError(
-                "No feature columns remaining after removing goal variables"
-            )
+            raise ValueError("No feature columns remaining after removing goal variables")
 
         # Process categorical and numeric data
         data = self._process_columns(data, metadata)
@@ -118,16 +108,12 @@ class DataProcessor:
     def _sample_data(self, data: pd.DataFrame) -> pd.DataFrame:
         """Sample data for large datasets."""
         np.random.seed(self.random_seed)
-        sample_indices = np.random.choice(
-            data.shape[0], self.max_rows_for_processing, replace=False
-        )
+        sample_indices = np.random.choice(data.shape[0], self.max_rows_for_processing, replace=False)
         sampled_data = data.iloc[sample_indices].reset_index(drop=True)
         logger.info(f"Sampled dataset shape: {sampled_data.shape}")
         return sampled_data
 
-    def _remove_goal_variables(
-        self, data: pd.DataFrame
-    ) -> Tuple[pd.DataFrame, List[str]]:
+    def _remove_goal_variables(self, data: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
         """
         Remove goal variables (columns ending with +, -, or !).
 
@@ -194,9 +180,7 @@ class DataProcessor:
             else:
                 # Last resort: force conversion
                 logger.warning(f"Column '{column}': forcing conversion to numeric")
-                data_processed[column] = pd.to_numeric(
-                    col_data, errors="coerce"
-                ).fillna(0)
+                data_processed[column] = pd.to_numeric(col_data, errors="coerce").fillna(0)
                 metadata["numeric_columns"].append(column)
 
         logger.info(
@@ -206,9 +190,7 @@ class DataProcessor:
 
         return data_processed
 
-    def _try_numeric_conversion(
-        self, data: pd.DataFrame, column: str, col_data: pd.Series
-    ) -> bool:
+    def _try_numeric_conversion(self, data: pd.DataFrame, column: str, col_data: pd.Series) -> bool:
         """
         Try to convert column to numeric.
 
@@ -220,19 +202,14 @@ class DataProcessor:
             if not numeric_data.isna().all():
                 # Fill NaN values with median for partially numeric columns
                 data[column] = numeric_data.fillna(numeric_data.median())
-                logger.debug(
-                    f"Column '{column}': converted to numeric "
-                    f"(filled {numeric_data.isna().sum()} NaN values)"
-                )
+                logger.debug(f"Column '{column}': converted to numeric " f"(filled {numeric_data.isna().sum()} NaN values)")
                 return True
         except Exception as e:
             logger.debug(f"Column '{column}': numeric conversion failed: {e}")
 
         return False
 
-    def _handle_categorical_column(
-        self, data: pd.DataFrame, column: str, col_data: pd.Series
-    ) -> bool:
+    def _handle_categorical_column(self, data: pd.DataFrame, column: str, col_data: pd.Series) -> bool:
         """
         Handle categorical column with label encoding.
 
@@ -242,16 +219,12 @@ class DataProcessor:
         try:
             if col_data.dtype == "object" or str(col_data.dtype) == "category":
                 unique_values = col_data.unique()
-                logger.debug(
-                    f"Column '{column}': categorical with {len(unique_values)} unique values"
-                )
+                logger.debug(f"Column '{column}': categorical with {len(unique_values)} unique values")
 
                 # Create label encoding
                 value_to_num = {val: idx for idx, val in enumerate(unique_values)}
                 data[column] = col_data.map(value_to_num).fillna(0)
-                logger.debug(
-                    f"Column '{column}': encoded as integers 0-{len(unique_values)-1}"
-                )
+                logger.debug(f"Column '{column}': encoded as integers 0-{len(unique_values)-1}")
                 return True
             else:
                 # Try string conversion then encoding
@@ -259,9 +232,7 @@ class DataProcessor:
                 unique_values = str_data.unique()
                 value_to_num = {val: idx for idx, val in enumerate(unique_values)}
                 data[column] = str_data.map(value_to_num)
-                logger.debug(
-                    f"Column '{column}': string-encoded ({len(unique_values)} unique values)"
-                )
+                logger.debug(f"Column '{column}': string-encoded ({len(unique_values)} unique values)")
                 return True
         except Exception as e:
             logger.debug(f"Column '{column}': categorical handling failed: {e}")
@@ -297,9 +268,7 @@ class DataProcessor:
             data = data.fillna(0)
 
         if inf_count > 0:
-            logger.warning(
-                f"Found {inf_count} infinite values, replacing with finite values"
-            )
+            logger.warning(f"Found {inf_count} infinite values, replacing with finite values")
             data = data.replace([np.inf, -np.inf], 0)
 
         metadata["final_shape"] = data.shape

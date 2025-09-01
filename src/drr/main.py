@@ -42,15 +42,11 @@ def setup_logging(level: str = "INFO", log_file: Optional[str] = None):
         os.makedirs(os.path.dirname(log_file), exist_ok=True)
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(log_level)
-        file_handler.setFormatter(
-            logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        )
+        file_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
         logging.getLogger().addHandler(file_handler)
 
 
-def process_single_dataset(
-    dataset_path: str, max_samples: int = 2000, distance_metric: str = "l1"
-):
+def process_single_dataset(dataset_path: str, max_samples: int = 2000, distance_metric: str = "l1"):
     """Process a single dataset file."""
     logger = logging.getLogger(__name__)
 
@@ -63,9 +59,7 @@ def process_single_dataset(
     try:
         # Initialize processors
         data_processor = DataProcessor()
-        estimator = IntrinsicDimensionEstimator(
-            max_samples=max_samples, distance_metric=distance_metric
-        )
+        estimator = IntrinsicDimensionEstimator(max_samples=max_samples, distance_metric=distance_metric)
 
         # Process the dataset
         processed_data, metadata = data_processor.process_dataset(dataset_path)
@@ -177,9 +171,7 @@ def cli(ctx, log_level, log_file):
 @cli.command()
 @click.argument("datasets_file", type=click.Path(exists=True))
 @click.option("--data-root", default="../data", help="Root directory for dataset files")
-@click.option(
-    "--max-samples", default=2000, help="Maximum number of samples for large datasets"
-)
+@click.option("--max-samples", default=2000, help="Maximum number of samples for large datasets")
 @click.option(
     "--metric",
     default="l1",
@@ -212,9 +204,7 @@ def batch(datasets_file, data_root, max_samples, metric):
 
 @cli.command()
 @click.argument("dataset_path", type=click.Path(exists=True))
-@click.option(
-    "--max-samples", default=2000, help="Maximum number of samples for large datasets"
-)
+@click.option("--max-samples", default=2000, help="Maximum number of samples for large datasets")
 @click.option(
     "--metric",
     default="l1",
@@ -233,9 +223,7 @@ def single(dataset_path, max_samples, metric):
     logger = logging.getLogger(__name__)
     logger.info(f"Single dataset processing: {dataset_path}")
 
-    success = process_single_dataset(
-        dataset_path=dataset_path, max_samples=max_samples, distance_metric=metric
-    )
+    success = process_single_dataset(dataset_path=dataset_path, max_samples=max_samples, distance_metric=metric)
 
     exit_code = 0 if success else 1
     logger.info(f"Single processing complete. Exit code: {exit_code}")
