@@ -222,18 +222,7 @@ class BatchProcessor:
     def _initialize_results_file(self):
         """Initialize the results CSV file with headers if it doesn't exist."""
         if not os.path.exists(self.results_file):
-            headers = [
-                "Dataset",
-                "IS LITE == DEHB",
-                "same",
-                "Separator",
-                "Type",
-                "Raw",
-                "Intrinsic",
-                "DRR = 1 - (I/R)",
-                "DRR vs Agrawal",
-                "IS LITE == DEHB",
-            ]
+            headers = ["Dataset", "R", "I", "DRR"]
 
             with open(self.results_file, "w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
@@ -285,18 +274,7 @@ class BatchProcessor:
 
     def _save_result_to_csv(self, dataset_name: str, original_dims: int, intrinsic_dim: int, drr: float):
         """Save processing result to CSV file."""
-        result_row = [
-            dataset_name,
-            "",
-            "",
-            "",
-            "",  # Empty columns for compatibility
-            original_dims,
-            intrinsic_dim,
-            f"{drr:.3f}",
-            "",
-            "",
-        ]
+        result_row = [dataset_name, original_dims, intrinsic_dim, f"{drr:.3f}"]
 
         with open(self.results_file, "a", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
