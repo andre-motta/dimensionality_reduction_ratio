@@ -21,6 +21,11 @@ wheels/
 *.egg
 MANIFEST
 
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
 # Virtual environments
 venv/
 env/
