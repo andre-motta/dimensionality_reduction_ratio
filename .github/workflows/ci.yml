@@ -73,14 +73,7 @@ jobs:
       id: coverage
       run: |
         # Extract coverage percentage from coverage.xml
-        coverage_percent=$(python -c "
-        import xml.etree.ElementTree as ET
-        tree = ET.parse('coverage.xml')
-        root = tree.getroot()
-        line_rate = float(root.attrib['line-rate'])
-        coverage = int(line_rate * 100)
-        print(coverage)
-        ")
+        coverage_percent=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); line_rate = float(root.attrib['line-rate']); coverage = int(line_rate * 100); print(coverage)")
         echo "percentage=$coverage_percent" >> $GITHUB_OUTPUT
         echo "Coverage: $coverage_percent%"
         
@@ -96,27 +89,7 @@ jobs:
     - name: Update coverage badge in README
       if: github.ref == 'refs/heads/main' && matrix.python-version == '3.11' && github.event_name == 'push'
       run: |
-        coverage=${{ steps.coverage.outputs.percentage }}
-        color=${{ steps.coverage.outputs.color }}
-        
-        # Update the coverage badge in README.md
-        sed -i "s/\[\!\[Coverage: [0-9]*%\]\(https:\/\/img\.shields\.io\/badge\/coverage-[0-9]*%25-[a-z]*\.svg\)\]/[![Coverage: ${coverage}%](https:\/\/img.shields.io\/badge\/coverage-${coverage}%25-${color}.svg)]/g" README.md
-        
-        # Check if README was modified
-        if git diff --quiet README.md; then
-          echo "No changes to README.md"
-        else
-          echo "Coverage badge updated to ${coverage}% (${color})"
-          
-          # Configure git
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          
-          # Commit and push the change
-          git add README.md
-          git commit -m "Update coverage badge to ${coverage}%"
-          git push
-        fi
+        echo "Coverage badge update moved to separate job for main branch only"
     
     - name: Upload coverage reports as artifacts
       uses: actions/upload-artifact@v4
@@ -186,14 +159,7 @@ jobs:
       id: coverage
       run: |
         # Extract coverage percentage from coverage.xml
-        coverage_percent=$(python -c "
-        import xml.etree.ElementTree as ET
-        tree = ET.parse('coverage.xml')
-        root = tree.getroot()
-        line_rate = float(root.attrib['line-rate'])
-        coverage = int(line_rate * 100)
-        print(coverage)
-        ")
+        coverage_percent=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); line_rate = float(root.attrib['line-rate']); coverage = int(line_rate * 100); print(coverage)")
         echo "percentage=$coverage_percent" >> $GITHUB_OUTPUT
         echo "Coverage: $coverage_percent%"
         
