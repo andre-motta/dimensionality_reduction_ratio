@@ -73,24 +73,32 @@ jobs:
           htmlcov/
           coverage.xml
     
+    - name: Install package for CLI testing
+      run: |
+        pip install -e .
+    
+    - name: Test module import
+      run: |
+        python -c "from drr import main; print('Module import successful')"
+        python -c "from drr.main import cli; print('CLI import successful')"
+    
     - name: Test CLI functionality
       run: |
-        cd src
-        python main.py --help
-        python main.py batch --help
-        python main.py single --help
+        # Test CLI commands using the installed package
+        drr --help
+        drr batch --help
+        drr single --help
     
     - name: Test with sample data (if available)
       run: |
-        cd src
         # Create a minimal test dataset
-        mkdir -p ../test_data
-        echo "a,b,c" > ../test_data/sample.csv
-        echo "1,2,3" >> ../test_data/sample.csv
-        echo "4,5,6" >> ../test_data/sample.csv
-        echo "7,8,9" >> ../test_data/sample.csv
+        mkdir -p test_data
+        echo "a,b,c" > test_data/sample.csv
+        echo "1,2,3" >> test_data/sample.csv
+        echo "4,5,6" >> test_data/sample.csv
+        echo "7,8,9" >> test_data/sample.csv
         # Test single dataset processing
-        python main.py single ../test_data/sample.csv || echo "Test completed (expected to handle small dataset)"
+        drr single test_data/sample.csv || echo "Test completed (expected to handle small dataset)"
       continue-on-error: true
 
   security:

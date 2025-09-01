@@ -3,7 +3,7 @@ requires = ["setuptools>=78.1.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "drr-toolkit"
+name = "drr"
 version = "1.0.0"
 description = "A professional Python toolkit for estimating intrinsic dimensionality and computing Dimensionality Reduction Ratio (DRR) metrics"
 readme = "README.md"
