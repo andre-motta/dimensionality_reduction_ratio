@@ -194,6 +194,7 @@ jobs:
           git add README.md
           git commit -m "Update coverage badge to ${coverage}%"
           git push
+        fi
 
   security:
     runs-on: ubuntu-latest
