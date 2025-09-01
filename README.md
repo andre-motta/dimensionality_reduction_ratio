@@ -74,7 +74,7 @@ The **intrinsic dimension** of a dataset is the minimum number of parameters nee
 ## 🛠️ Installation
 
 ### Prerequisites
-- Python 3.8+
+- Python 3.11+
 - pip (Python package installer)
 
 ### Setup
