@@ -1,0 +1,165 @@
+[build-system]
+requires = ["setuptools>=78.1.1", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "drr"
+version = "1.0.0"
+description = "A professional Python toolkit for estimating intrinsic dimensionality and computing Dimensionality Reduction Ratio (DRR) metrics"
+readme = "README.md"
+license = {text = "Unlicense"}
+authors = [
+    {name = "Andre Lustosa", email = "dexmotta6@gmail.com"}
+]
+maintainers = [
+    {name = "Andre Lustosa", email = "dexmotta6@gmail.com"}
+]
+keywords = [
+    "dimensionality-reduction",
+    "intrinsic-dimension", 
+    "machine-learning",
+    "data-analysis",
+    "correlation-function",
+    "levina-bickel"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: The Unlicense (Unlicense)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.21.0,<2.0.0",
+    "pandas>=1.3.0,<3.0.0",
+    "scipy>=1.7.0,<2.0.0",
+    "matplotlib>=3.4.0,<4.0.0",
+    "click>=8.0.0,<9.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "flake8>=7.0.0",
+    "black>=25.0.0", 
+    "isort>=6.0.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+security = [
+    "bandit>=1.7.0",
+    "safety>=2.0.0,<3.0.0",
+]
+all = [
+    "drr[dev,security]"
+]
+
+[project.urls]
+Homepage = "https://github.com/andre-motta/dimensionality_reduction_ratio"
+Repository = "https://github.com/andre-motta/dimensionality_reduction_ratio"
+Documentation = "https://github.com/andre-motta/dimensionality_reduction_ratio#readme"
+"Bug Tracker" = "https://github.com/andre-motta/dimensionality_reduction_ratio/issues"
+Changelog = "https://github.com/andre-motta/dimensionality_reduction_ratio/releases"
+
+[project.scripts]
+drr = "drr.main:cli"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.black]
+line-length = 127
+target-version = ['py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 127
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.flake8]
+max-line-length = 127
+extend-ignore = ["E203", "W503"]
+exclude = [
+    ".git",
+    "__pycache__",
+    "dist",
+    "build",
+    "*.egg-info",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src/drr",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "--cov-report=xml:coverage.xml",
+    "--cov-fail-under=90",
+    "-v"
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests"
+]
+
+[tool.coverage.run]
+source = ["src/drr"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/conftest.py",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/env/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod"
+]
+
+[tool.coverage.html]
+directory = "htmlcov"

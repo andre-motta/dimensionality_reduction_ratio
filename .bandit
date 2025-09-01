@@ -1,0 +1,17 @@
+# Bandit security configuration
+# https://bandit.readthedocs.io/en/latest/config.html
+
+[bandit]
+# Exclude test directories and specific files
+exclude_dirs = ["tests", "test", "__pycache__", "build", "dist"]
+
+# Skip specific test IDs that are not relevant for this project
+skips = [
+    "B101",  # assert_used - we use asserts appropriately
+    "B601",  # paramiko_calls - not used in this project
+    "B602",  # subprocess_popen_with_shell_equals_true - not used
+]
+
+# Set confidence and severity levels
+confidence = "medium"
+severity = "medium"

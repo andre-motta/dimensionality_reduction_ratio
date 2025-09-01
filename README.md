@@ -1,18 +1,27 @@
 # Intrinsic Dimension Analysis with DRR Metrics
 
+[![CI](https://github.com/USER/REPO/workflows/CI/badge.svg)](https://github.com/USER/REPO/actions)
+[![codecov](https://codecov.io/gh/USER/REPO/branch/main/graph/badge.svg)](https://codecov.io/gh/USER/REPO)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 A professional Python toolkit for estimating the intrinsic dimensionality of datasets and computing Dimensionality Reduction Ratio (DRR) metrics. This implementation is based on the correlation function approach from Levina & Bickel (2005) with enhancements for large-scale dataset processing.
 
 ## 🚀 Quick Start
 
 ```bash
+# Install the package
+pip install drr
+
 # Process all datasets from configuration file
-python main.py batch datasets.txt
+drr batch datasets.txt
 
 # Process a single dataset
-python main.py single data/config/Apache_AllMeasurements.csv
+drr single data/config/Apache_AllMeasurements.csv
 
 # Use custom parameters with debug logging
-python main.py --log-level DEBUG batch datasets.txt --max-samples 5000 --metric euclidean
+drr --log-level DEBUG batch datasets.txt --max-samples 5000 --metric euclidean
 ```
 
 ## 📋 Table of Contents
@@ -73,22 +82,45 @@ The **intrinsic dimension** of a dataset is the minimum number of parameters nee
 
 ## 🛠️ Installation
 
-### Prerequisites
-- Python 3.11+
-- pip (Python package installer)
+## 🛠️ Installation
 
-### Setup
+### From PyPI (Recommended)
+```bash
+# Install the latest stable version
+pip install drr
+
+# Install with development dependencies
+pip install drr[dev]
+
+# Install with all optional dependencies
+pip install drr[all]
+```
+
+### From Source
 ```bash
 # Clone the repository
 git clone https://github.com/andre-motta/dimensionality_reduction_ratio.git
 cd dimensionality_reduction_ratio
 
-# Install dependencies
-pip install -r requirements.txt
+# Install in development mode
+pip install -e .
 
-# Verify installation
+# Or install with development dependencies
+pip install -e .[dev]
+```
+
+### Prerequisites
+- Python 3.11+
+- pip (Python package installer)
+
+### Verify Installation
+```bash
+# Test the command-line interface
+drr --help
+
+# Or if installed from source
 cd src
-python main.py --help
+python -m drr --help
 ```
 
 ### Dependencies
@@ -106,12 +138,12 @@ This project uses the following key libraries:
 #### Batch Processing
 Process multiple datasets from a configuration file:
 ```bash
-python main.py batch datasets.txt
+drr batch datasets.txt
 ```
 
 With custom parameters:
 ```bash
-python main.py --log-level DEBUG batch datasets.txt \
+drr --log-level DEBUG batch datasets.txt \
     --max-samples 5000 \
     --metric euclidean \
     --data-root data
@@ -120,12 +152,12 @@ python main.py --log-level DEBUG batch datasets.txt \
 #### Single Dataset Processing
 Process an individual dataset:
 ```bash
-python main.py single data/config/Apache_AllMeasurements.csv
+drr single data/config/Apache_AllMeasurements.csv
 ```
 
 With custom parameters:
 ```bash
-python main.py single data/config/Apache_AllMeasurements.csv \
+drr single data/config/Apache_AllMeasurements.csv \
     --max-samples 3000 \
     --metric manhattan
 ```
@@ -149,28 +181,31 @@ python main.py single data/config/Apache_AllMeasurements.csv \
 
 #### Single Dataset Analysis
 ```python
-from src.intrinsic_dimension import IntrinsicDimensionEstimator
-from src.data_processor import DataProcessor
+import drr
 
-# Initialize components
-processor = DataProcessor()
-estimator = IntrinsicDimensionEstimator(max_samples=2000, distance_metric='euclidean')
-
-# Process dataset
-data, metadata = processor.process_dataset('data/config/Apache_AllMeasurements.csv')
-original_dims, intrinsic_dim, drr = estimator.estimate(data)
+# Simple usage with convenience function
+data = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]  # Your dataset
+original_dims, intrinsic_dim, drr_value = drr.estimate_intrinsic_dimension(data)
 
 print(f"Raw dimensions: {original_dims}")
 print(f"Intrinsic dimension: {intrinsic_dim}")
-print(f"DRR: {drr:.3f}")
+print(f"DRR: {drr_value:.3f}")
+
+# Advanced usage with classes
+estimator = drr.IntrinsicDimensionEstimator(max_samples=2000, distance_metric='euclidean')
+processor = drr.DataProcessor()
+
+# Process dataset from file
+data, metadata = processor.process_dataset('data/config/Apache_AllMeasurements.csv')
+original_dims, intrinsic_dim, drr_value = estimator.estimate(data)
 ```
 
 #### Batch Processing
 ```python
-from src.batch_processor import BatchProcessor
+import drr
 
 # Initialize batch processor
-processor = BatchProcessor(
+processor = drr.BatchProcessor(
     results_file="results/my_results.csv",
     max_samples=2000,
     distance_metric='manhattan'
@@ -280,17 +315,16 @@ dimensionality_reduction_ratio/
 
 ### Validate Installation
 ```bash
-# Test single dataset (from src directory)
-cd src
-python main.py single ../data/optimize/config/SS-A.csv
+# Test the command-line interface
+drr --help
+drr batch --help 
+drr single --help
+
+# Test with sample data
+drr single data/optimize/config/SS-A.csv
 
 # Test batch processing (small subset)
-python main.py batch ../config/test_dataset.txt
-
-# Test help functionality
-python main.py --help
-python main.py batch --help
-python main.py single --help
+drr batch config/test_dataset.txt
 ```
 
 ---

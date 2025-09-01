@@ -11,12 +11,16 @@ import os
 import logging
 import numpy as np
 
-# Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
-from src.intrinsic_dimension import IntrinsicDimensionEstimator
-from src.data_processor import DataProcessor
-from src.batch_processor import BatchProcessor
+# Import strategy: try installed package first, then development setup
+try:
+    # Try importing from installed package
+    from drr import IntrinsicDimensionEstimator, DataProcessor, BatchProcessor
+except ImportError:
+    # Fall back to development setup
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+    from drr.intrinsic_dimension_estimator import IntrinsicDimensionEstimator
+    from drr.data_processor import DataProcessor
+    from drr.batch_processor import BatchProcessor
 
 
 def setup_logging():

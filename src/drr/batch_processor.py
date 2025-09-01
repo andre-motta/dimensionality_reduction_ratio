@@ -14,8 +14,8 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
-from data_processor import DataProcessor
-from intrinsic_dimension import IntrinsicDimensionEstimator
+from .data_processor import DataProcessor
+from .intrinsic_dimension_estimator import IntrinsicDimensionEstimator
 
 logger = logging.getLogger(__name__)
 

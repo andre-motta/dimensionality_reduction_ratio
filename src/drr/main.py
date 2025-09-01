@@ -21,9 +21,9 @@ from typing import Optional
 
 import click
 
-from batch_processor import BatchProcessor
-from data_processor import DataProcessor
-from intrinsic_dimension import IntrinsicDimensionEstimator
+from .batch_processor import BatchProcessor
+from .data_processor import DataProcessor
+from .intrinsic_dimension_estimator import IntrinsicDimensionEstimator
 
 
 def setup_logging(level: str = "INFO", log_file: Optional[str] = None):

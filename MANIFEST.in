@@ -1,0 +1,11 @@
+include README.md
+include CONTRIBUTING.md
+include requirements.txt
+include pyproject.toml
+recursive-include src/drr *.py
+recursive-include config *.txt
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * *~
+recursive-exclude * *.swp
+recursive-exclude * .DS_Store

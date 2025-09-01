@@ -32,8 +32,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        # Upgrade setuptools to fix security vulnerabilities
+        pip install "setuptools>=78.1.1"
         pip install -r requirements.txt
-        pip install flake8 black isort pytest
+        pip install flake8 black isort pytest pytest-cov pytest-mock
     
     - name: Lint with flake8
       run: |
@@ -49,6 +51,27 @@ jobs:
     - name: Check import sorting with isort
       run: |
         isort --check-only --diff src/
+    
+    - name: Run tests with coverage
+      run: |
+        pytest tests/ --cov=src --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=62 -v
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+    
+    - name: Upload coverage reports as artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-reports-${{ matrix.python-version }}
+        path: |
+          htmlcov/
+          coverage.xml
     
     - name: Test CLI functionality
       run: |
@@ -83,8 +106,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        # Upgrade setuptools to fix security vulnerabilities
+        pip install "setuptools>=78.1.1"
         pip install -r requirements.txt
-        pip install bandit "safety<3.0.0" "typer<0.13.0"
+        pip install bandit>=1.7.5 "safety>=3.0.0" "typer>=0.12.0,<0.13.0" pytest pytest-cov
     
     - name: Security audit with bandit
       run: |
@@ -93,5 +118,4 @@ jobs:
     
     - name: Check for known security vulnerabilities
       run: |
-        safety check || echo "Safety check failed - skipping for now"
-      continue-on-error: true
+        safety check

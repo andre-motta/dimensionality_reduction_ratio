@@ -38,9 +38,18 @@ ENV/
 .DS_Store
 Thumbs.db
 
+# Coverage files
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.tox/
+
 # Project specific - results and logs only
 results/*.csv
 logs/*.log
+dataset_results.csv
+*.log
 
 # Legacy directories (from original repo)
 Images\ Paper/
