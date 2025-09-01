@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "drr"
-version = "1.0.0"
+version = "1.0.1"
 description = "A professional Python toolkit for estimating intrinsic dimensionality and computing Dimensionality Reduction Ratio (DRR) metrics"
 readme = "README.md"
 license = {text = "Unlicense"}
