@@ -1,4 +1,4 @@
-# Intrinsic Dimension Analysis with DRR Metrics
+# DRR: Dimensionality Reduction Ratio Toolkit
 
 [![CI](https://github.com/andre-motta/dimensionality_reduction_ratio/workflows/CI/badge.svg)](https://github.com/andre-motta/dimensionality_reduction_ratio/actions)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -6,7 +6,34 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Coverage: 82%](https://img.shields.io/badge/coverage-82%25-brightgreen.svg)](https://github.com/andre-motta/dimensionality_reduction_ratio/actions)
 
-A professional Python toolkit for estimating the intrinsic dimensionality of datasets and computing Dimensionality Reduction Ratio (DRR) metrics. This implementation is based on the correlation function approach from Levina & Bickel (2005) with enhancements for large-scale dataset processing.
+> **"Less Noise, More Signal: DRR for Better Optimizations of SE Tasks"**  
+> *A research-backed approach to predicting when lightweight algorithms suffice*
+
+A professional Python toolkit for estimating intrinsic dimensionality and computing **Dimensionality Reduction Ratio (DRR)** metrics. This implementation is based on cutting-edge research from NC State University showing that **DRR can predict when simple algorithms outperform complex AI methods by orders of magnitude**.
+
+## 🎯 Research Background
+
+This toolkit implements the methodology from our research paper ["Less Noise, More Signal: DRR for Better Optimizations of SE Tasks"](https://arxiv.org/abs/2503.21086) which demonstrates that:
+
+- **89% of Software Engineering datasets** satisfy the DRR threshold for simplified optimization
+- **Simple methods can be 100x faster** than state-of-the-art optimizers when DRR > 1/3
+- **SE data has lower intrinsic complexity** (median 3.1 dimensions) compared to general ML data (median 5 dimensions)
+
+## 🔬 What is DRR?
+
+The **Dimensionality Reduction Ratio (DRR)** is a metric that quantifies how much dimensionality reduction is possible in a dataset:
+
+```
+DRR = 1 - (I/R)
+```
+
+Where:
+- **I** = Intrinsic dimension (estimated using correlation function analysis)
+- **R** = Raw dimension (number of original features)
+
+### Research Finding: The 1/3 Threshold
+
+Our research shows that when **DRR > 1/3**, simple algorithms can achieve the same performance as complex state-of-the-art optimizers but run **two orders of magnitude faster**.
 
 ## 🚀 Quick Start
 
@@ -249,16 +276,30 @@ mvn
 
 ## 🔬 Algorithm Details
 
-### Correlation Function Method
+### Fractal-Based Intrinsic Dimension Estimation
 
-The algorithm estimates intrinsic dimension using the correlation function approach:
+This toolkit implements the **correlation function method** used in our research, which leverages fractal geometry concepts to estimate intrinsic dimensionality:
 
-1. **Distance Computation**: Calculate pairwise distances between data points
-2. **Correlation Function**: `C(r) = (2 * I) / (n * (n-1))` where I is the number of pairs with distance ≤ r
-3. **Log-Log Analysis**: Fit linear regression to `log(C(r))` vs `log(r)`
-4. **Dimension Estimation**: The slope approximates the intrinsic dimension
+1. **Distance Analysis**: Calculate pairwise distances between data points
+2. **Correlation Function**: For radius R, compute `C(r) = (2 * I) / (n * (n-1))` where I is the number of pairs with distance ≤ r
+3. **Fractal Dimension**: Analyze how the number of points scales with distance radius
+4. **Gradient Analysis**: The maximum gradient of log(C(r)) vs log(r) approximates the intrinsic dimension
 
-## 📊 DRR Metrics
+### Key Advantages
+
+- **Accuracy**: More precise than traditional PCA-based methods
+- **Robustness**: Less sensitive to noise and outliers  
+- **Scalability**: Efficient for large datasets through intelligent sampling
+- **Research-Validated**: Proven effective on 24+ real-world datasets
+
+### The Research Breakthrough
+
+Our methodology **fixes critical errors** in previous approaches:
+- Previous work suggested simple algorithms when I < 4
+- Our research found **many counter-examples** to this threshold
+- **New threshold: DRR > 1/3** provides much more accurate predictions
+
+## 📊 DRR Metrics & Research Insights
 
 ### Understanding DRR Values
 
@@ -267,14 +308,25 @@ The algorithm estimates intrinsic dimension using the correlation function appro
 - **R**: Raw dimension (number of features)
 - **DRR**: Dimensionality Reduction Ratio
 
-### Interpretation Guidelines
+### Research-Based Interpretation Guidelines
 
-| DRR Range | Interpretation | Example Dataset Type |
-|-----------|----------------|---------------------|
-| **0.0 - 0.2** | Low reduction potential | Behavior/performance data |
-| **0.2 - 0.4** | Moderate reduction | Mixed datasets |
-| **0.4 - 0.6** | Good reduction potential | Configuration data |
-| **0.6 - 1.0** | High reduction potential | Highly correlated features |
+| DRR Range | Algorithm Recommendation | Performance Insight | SE Data Examples |
+|-----------|--------------------------|---------------------|------------------|
+| **> 0.67** | Use simple methods | 100x faster, same quality | Software configuration (SS-B, SS-D) |
+| **0.33 - 0.67** | Simple methods often sufficient | 10-50x speedup possible | Most SE optimization tasks |
+| **< 0.33** | Complex methods may be needed | Intrinsic complexity requires sophisticated algorithms | General ML datasets |
+
+### Key Research Findings
+
+📈 **SE vs General ML Data**:
+- **Median SE intrinsic dimensionality**: 3.1 dimensions
+- **Median general ML intrinsic dimensionality**: 5.0 dimensions  
+- **Conclusion**: SE problems are inherently less complex
+
+🚀 **Performance Implications**:
+- **89% of SE datasets** satisfy DRR > 1/3 threshold
+- **Simple algorithms** (30 samples) perform as well as complex ones (3000 samples)
+- **Speedup**: 2 orders of magnitude (seconds vs 20 minutes)
 
 ## 📈 Results
 
@@ -329,8 +381,29 @@ drr batch config/test_dataset.txt
 
 ---
 
+## � Citation
+
+If you use this toolkit in your research, please cite our paper:
+
+```bibtex
+@article{lustosa2025drr,
+  title={Less Noise, More Signal: DRR for Better Optimizations of SE Tasks},
+  author={Andre Lustosa and Tim Menzies},
+  journal={arXiv preprint arXiv:2503.21086},
+  year={2025},
+  url={https://arxiv.org/abs/2503.21086}
+}
+```
+
+## �🔗 Research Links
+
+- **📄 Paper**: [arXiv:2503.21086](https://arxiv.org/abs/2503.21086)
+- **💻 Research Code**: [GitHub Repository](https://github.com/andre-motta/dimensionality_reduction_ratio)
+- **🏛️ Institution**: North Carolina State University, Department of Computer Science
+- **👥 Authors**: Andre Lustosa, Tim Menzies (Fellow, IEEE)
+
 ## 🔗 Repository
 
 **GitHub Repository**: https://github.com/andre-motta/dimensionality_reduction_ratio
 
-For questions or support, please open an issue in the repository or contact the maintainers.
+For questions, issues, or contributions, please visit the repository or contact the maintainers.
