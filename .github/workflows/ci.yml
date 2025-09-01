@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: write  # Allow writing to repository for coverage badge updates
+  actions: read
+  checks: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -56,13 +61,54 @@ jobs:
       run: |
         pytest tests/ --cov=src --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=62 -v
     
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+    - name: Extract coverage percentage
+      id: coverage
+      run: |
+        # Extract coverage percentage from coverage.xml
+        coverage_percent=$(python -c "
+        import xml.etree.ElementTree as ET
+        tree = ET.parse('coverage.xml')
+        root = tree.getroot()
+        line_rate = float(root.attrib['line-rate'])
+        coverage = int(line_rate * 100)
+        print(coverage)
+        ")
+        echo "percentage=$coverage_percent" >> $GITHUB_OUTPUT
+        echo "Coverage: $coverage_percent%"
+        
+        # Determine badge color based on coverage
+        if [ $coverage_percent -ge 70 ]; then
+          echo "color=brightgreen" >> $GITHUB_OUTPUT
+        elif [ $coverage_percent -ge 50 ]; then
+          echo "color=yellow" >> $GITHUB_OUTPUT
+        else
+          echo "color=red" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Update coverage badge in README
+      if: github.ref == 'refs/heads/main' && matrix.python-version == '3.11' && github.event_name == 'push'
+      run: |
+        coverage=${{ steps.coverage.outputs.percentage }}
+        color=${{ steps.coverage.outputs.color }}
+        
+        # Update the coverage badge in README.md
+        sed -i "s/\[\!\[Coverage: [0-9]*%\]\(https:\/\/img\.shields\.io\/badge\/coverage-[0-9]*%25-[a-z]*\.svg\)\]/[![Coverage: ${coverage}%](https:\/\/img.shields.io\/badge\/coverage-${coverage}%25-${color}.svg)]/g" README.md
+        
+        # Check if README was modified
+        if git diff --quiet README.md; then
+          echo "No changes to README.md"
+        else
+          echo "Coverage badge updated to ${coverage}% (${color})"
+          
+          # Configure git
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Commit and push the change
+          git add README.md
+          git commit -m "Update coverage badge to ${coverage}%"
+          git push
+        fi
     
     - name: Upload coverage reports as artifacts
       uses: actions/upload-artifact@v4
@@ -72,6 +118,7 @@ jobs:
         path: |
           htmlcov/
           coverage.xml
+        retention-days: 30
     
     - name: Install package for CLI testing
       run: |

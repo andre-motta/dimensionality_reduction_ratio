@@ -1,10 +1,10 @@
 # Intrinsic Dimension Analysis with DRR Metrics
 
-[![CI](https://github.com/USER/REPO/workflows/CI/badge.svg)](https://github.com/USER/REPO/actions)
-[![codecov](https://codecov.io/gh/USER/REPO/branch/main/graph/badge.svg)](https://codecov.io/gh/USER/REPO)
+[![CI](https://github.com/andre-motta/dimensionality_reduction_ratio/workflows/CI/badge.svg)](https://github.com/andre-motta/dimensionality_reduction_ratio/actions)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Coverage: 82%](https://img.shields.io/badge/coverage-82%25-brightgreen.svg)](https://github.com/andre-motta/dimensionality_reduction_ratio/actions)
 
 A professional Python toolkit for estimating the intrinsic dimensionality of datasets and computing Dimensionality Reduction Ratio (DRR) metrics. This implementation is based on the correlation function approach from Levina & Bickel (2005) with enhancements for large-scale dataset processing.
 
