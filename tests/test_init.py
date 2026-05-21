@@ -38,7 +38,8 @@ def test_package_metadata():
 def test_version_import():
     """Test version can be imported directly."""
     assert __version__ == drr.__version__
-    assert __version__ == "1.0.2"
+    assert isinstance(__version__, str)
+    assert len(__version__) > 0
 
 
 def test_class_imports():
