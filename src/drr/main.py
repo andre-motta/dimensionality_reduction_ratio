@@ -281,9 +281,9 @@ def info(dataset_path):
         click.echo(f"Goal variables: {', '.join(goal_cols)}")
     else:
         click.echo("Goal variables: none detected")
-    click.echo(f"Missing values: {missing}")
+    click.echo(f"Missing values (features only): {missing}")
     if df.shape[0] > 5000:
-        click.echo("Note: large dataset, will be sampled to 5000 rows for estimation")
+        click.echo("Note: large dataset, will be sampled during processing and estimation")
     click.echo(f"{'='*60}")
 
 
