@@ -148,9 +148,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install "setuptools-scm>=8"
         pip install -r requirements.txt
         pip install pytest pytest-cov
-    
+        pip install -e .
+
     - name: Run tests for coverage extraction
       run: |
         pytest tests/ --cov=src --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=62 -v
