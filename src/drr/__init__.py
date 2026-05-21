@@ -16,7 +16,10 @@ Functions:
     estimate_intrinsic_dimension: Convenience function for single dataset analysis
 """
 
-__version__ = "1.0.2"
+try:
+    from ._version import version as __version__
+except ModuleNotFoundError:
+    __version__ = "0.0.0.dev0"
 __author__ = "Andre Lustosa"
 __email__ = "dexmotta6@gmail.com"
 
