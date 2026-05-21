@@ -39,7 +39,7 @@ def test_version_import():
     """Test version can be imported directly."""
     assert __version__ == drr.__version__
     assert isinstance(__version__, str)
-    assert len(__version__) > 0
+    assert __version__ != "0.0.0.dev0", "setuptools-scm _version.py not generated"
 
 
 def test_class_imports():

@@ -18,8 +18,8 @@ Functions:
 
 try:
     from ._version import version as __version__
-except ImportError:
-    __version__ = "0.0.0"
+except ModuleNotFoundError:
+    __version__ = "0.0.0.dev0"
 __author__ = "Andre Lustosa"
 __email__ = "dexmotta6@gmail.com"
 
