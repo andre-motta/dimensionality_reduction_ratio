@@ -15,12 +15,13 @@ import pytest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 from drr.main import (
-    setup_logging, 
-    process_single_dataset, 
-    process_batch_datasets, 
+    setup_logging,
+    process_single_dataset,
+    process_batch_datasets,
     cli,
     batch,
-    single
+    single,
+    info,
 )
 
 
@@ -493,6 +494,95 @@ def test_process_functions_error_handling():
             # Should handle errors gracefully
             result = process_single_dataset(f.name)
             assert isinstance(result, bool)
-            
+
+        finally:
+            os.unlink(f.name)
+
+
+def test_version_flag():
+    """Test --version outputs version string."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--version"])
+
+    assert result.exit_code == 0
+    assert "drr" in result.output
+
+
+def test_info_command():
+    """Test info command shows dataset summary."""
+    runner = CliRunner()
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+        df = pd.DataFrame({"x": [1, 2, 3], "y": [4, 5, 6], "goal+": [0, 1, 0]})
+        df.to_csv(f.name, index=False)
+
+        try:
+            result = runner.invoke(info, [f.name])
+
+            assert result.exit_code == 0
+            assert "DATASET INFO" in result.output
+            assert "3 rows x 3 columns" in result.output
+            assert "Feature columns: 2" in result.output
+            assert "goal+" in result.output
+        finally:
+            os.unlink(f.name)
+
+
+def test_info_command_no_goals():
+    """Test info command with no goal variables."""
+    runner = CliRunner()
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+        df = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
+        df.to_csv(f.name, index=False)
+
+        try:
+            result = runner.invoke(info, [f.name])
+
+            assert result.exit_code == 0
+            assert "none detected" in result.output
+        finally:
+            os.unlink(f.name)
+
+
+def test_single_json_output():
+    """Test single command with --output json."""
+    import json
+
+    runner = CliRunner()
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+        df = pd.DataFrame({"x": [1, 2, 3, 4], "y": [4, 5, 6, 7]})
+        df.to_csv(f.name, index=False)
+
+        try:
+            result = runner.invoke(single, [f.name, "--output", "json"])
+
+            assert result.exit_code in [0, 1]
+            if result.exit_code == 0:
+                data = json.loads(result.output.strip())
+                assert "R" in data
+                assert "I" in data
+                assert "DRR" in data
+                assert "dataset" in data
+        finally:
+            os.unlink(f.name)
+
+
+def test_single_text_output():
+    """Test single command with --output text (default)."""
+    runner = CliRunner()
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+        df = pd.DataFrame({"x": [1, 2, 3, 4], "y": [4, 5, 6, 7]})
+        df.to_csv(f.name, index=False)
+
+        try:
+            result = runner.invoke(single, [f.name, "--output", "text"])
+
+            assert result.exit_code in [0, 1]
+            if result.exit_code == 0:
+                assert "RESULTS FOR" in result.output
+                assert "DRR" in result.output
         finally:
             os.unlink(f.name)

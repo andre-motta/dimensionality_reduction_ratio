@@ -14,12 +14,15 @@ Usage:
     python main.py --help
 """
 
+import json
 import logging
 import os
 import sys
 
 import click
+import pandas as pd
 
+from . import __version__
 from .batch_processor import BatchProcessor
 from .data_processor import DataProcessor
 from .intrinsic_dimension_estimator import IntrinsicDimensionEstimator
@@ -45,7 +48,9 @@ def setup_logging(level: str = "INFO", log_file: str | None = None):
         logging.getLogger().addHandler(file_handler)
 
 
-def process_single_dataset(dataset_path: str, max_samples: int = 2000, distance_metric: str = "l1"):
+def process_single_dataset(
+    dataset_path: str, max_samples: int = 2000, distance_metric: str = "l1", output_format: str = "text"
+):
     """Process a single dataset file."""
     logger = logging.getLogger(__name__)
 
@@ -56,29 +61,32 @@ def process_single_dataset(dataset_path: str, max_samples: int = 2000, distance_
     logger.info(f"Processing single dataset: {dataset_path}")
 
     try:
-        # Initialize processors
         data_processor = DataProcessor()
         estimator = IntrinsicDimensionEstimator(max_samples=max_samples, distance_metric=distance_metric)
 
-        # Process the dataset
         processed_data, metadata = data_processor.process_dataset(dataset_path)
 
         if not data_processor.validate_processed_data(processed_data):
             logger.error("Data validation failed")
             return False
 
-        # Estimate intrinsic dimension
         original_dims, intrinsic_dim, drr = estimator.estimate(processed_data)
 
-        # Print results
-        click.echo(f"\n{'='*60}")
-        click.echo(f"RESULTS FOR: {os.path.basename(dataset_path)}")
-        click.echo(f"{'='*60}")
-        click.echo(f"Original Dimensions (R): {original_dims}")
-        click.echo(f"Intrinsic Dimension (I): {intrinsic_dim}")
-        click.echo(f"DRR (1 - I/R): {drr:.3f}")
-        click.echo(f"Data Quality: {drr:.1%} dimensionality reduction")
-        click.echo(f"{'='*60}")
+        if output_format == "json":
+            click.echo(
+                json.dumps(
+                    {"dataset": os.path.basename(dataset_path), "R": original_dims, "I": intrinsic_dim, "DRR": round(drr, 3)}
+                )
+            )
+        else:
+            click.echo(f"\n{'='*60}")
+            click.echo(f"RESULTS FOR: {os.path.basename(dataset_path)}")
+            click.echo(f"{'='*60}")
+            click.echo(f"Original Dimensions (R): {original_dims}")
+            click.echo(f"Intrinsic Dimension (I): {intrinsic_dim}")
+            click.echo(f"DRR (1 - I/R): {drr:.3f}")
+            click.echo(f"Data Quality: {drr:.1%} dimensionality reduction")
+            click.echo(f"{'='*60}")
 
         return True
 
@@ -134,6 +142,7 @@ def process_batch_datasets(
 
 
 @click.group(invoke_without_command=True)
+@click.version_option(version=__version__, prog_name="drr")
 @click.option(
     "--log-level",
     default="INFO",
@@ -210,23 +219,72 @@ def batch(datasets_file, data_root, max_samples, metric):
     type=click.Choice(["l1", "l2", "euclidean", "manhattan", "cosine"]),
     help="Distance metric for analysis",
 )
-def single(dataset_path, max_samples, metric):
+@click.option(
+    "--output",
+    default="text",
+    type=click.Choice(["text", "json"]),
+    help="Output format (default: text)",
+)
+def single(dataset_path, max_samples, metric, output):
     """
     Process a single dataset file.
 
     DATASET_PATH: Path to the dataset file to process
 
     Example:
-        python main.py single ../data/optimize/config/SS-A.csv --metric euclidean
+        drr single data.csv --metric euclidean
+        drr single data.csv --output json
     """
     logger = logging.getLogger(__name__)
     logger.info(f"Single dataset processing: {dataset_path}")
 
-    success = process_single_dataset(dataset_path=dataset_path, max_samples=max_samples, distance_metric=metric)
+    success = process_single_dataset(
+        dataset_path=dataset_path, max_samples=max_samples, distance_metric=metric, output_format=output
+    )
 
     exit_code = 0 if success else 1
     logger.info(f"Single processing complete. Exit code: {exit_code}")
     sys.exit(exit_code)
+
+
+@cli.command()
+@click.argument("dataset_path", type=click.Path(exists=True))
+def info(dataset_path):
+    """
+    Show dataset summary without running estimation.
+
+    DATASET_PATH: Path to the dataset file to inspect
+
+    Example:
+        drr info data.csv
+    """
+    try:
+        df = pd.read_csv(dataset_path)
+    except Exception as e:
+        click.echo(f"Error reading file: {e}", err=True)
+        sys.exit(1)
+
+    goal_cols = [c for c in df.columns if str(c).endswith(("+", "-", "!"))]
+    feature_cols = [c for c in df.columns if c not in goal_cols]
+    numeric_cols = [c for c in feature_cols if pd.api.types.is_numeric_dtype(df[c])]
+    categorical_cols = [c for c in feature_cols if c not in numeric_cols]
+    missing = int(df[feature_cols].isna().sum().sum()) if feature_cols else 0
+
+    click.echo(f"\n{'='*60}")
+    click.echo(f"DATASET INFO: {os.path.basename(dataset_path)}")
+    click.echo(f"{'='*60}")
+    click.echo(f"Shape: {df.shape[0]} rows x {df.shape[1]} columns")
+    click.echo(f"Feature columns: {len(feature_cols)}")
+    click.echo(f"  Numeric: {len(numeric_cols)}")
+    click.echo(f"  Categorical: {len(categorical_cols)}")
+    if goal_cols:
+        click.echo(f"Goal variables: {', '.join(goal_cols)}")
+    else:
+        click.echo("Goal variables: none detected")
+    click.echo(f"Missing values: {missing}")
+    if df.shape[0] > 5000:
+        click.echo("Note: large dataset, will be sampled to 5000 rows for estimation")
+    click.echo(f"{'='*60}")
 
 
 if __name__ == "__main__":
