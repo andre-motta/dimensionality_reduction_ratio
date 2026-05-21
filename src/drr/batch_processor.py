@@ -239,6 +239,14 @@ class BatchProcessor:
             # Construct full file path
             csv_file = os.path.join(data_root, f"{dataset_path}.csv")
 
+            resolved = os.path.realpath(csv_file)
+            root_realpath = os.path.realpath(data_root)
+            if os.path.commonpath([resolved, root_realpath]) != root_realpath:
+                error_msg = f"Path traversal detected: {dataset_path}"
+                logger.error(error_msg)
+                self._log_error(dataset_name, error_msg)
+                return False
+
             if not os.path.exists(csv_file):
                 error_msg = f"Dataset file not found: {csv_file}"
                 logger.error(error_msg)

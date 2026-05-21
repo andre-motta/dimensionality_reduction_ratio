@@ -275,25 +275,18 @@ def test_error_logging():
 def test_save_result_to_csv():
     """Test saving results to CSV - hits lines 307-324."""
     processor = BatchProcessor(results_file="save_test/results.csv")
-    
+
     try:
-        # Test the _save_result_to_csv method
-        result_data = {
-            'dataset_name': 'test',
-            'intrinsic_dimension': 2.5,
-            'raw_dimension': 5,
-            'drr': 0.5
-        }
-        
-        processor._save_result_to_csv(result_data)
-        
-        # Should have saved the result
-        assert hasattr(processor, '_save_result_to_csv')
-        
-    except Exception:
-        # Allow failures but test method exists
-        assert True
-    
+        processor._initialize_results_file()
+        processor._save_result_to_csv("test", 5, 2, 0.5)
+
+        import pandas as pd
+        df = pd.read_csv("save_test/results.csv")
+        assert len(df) == 1
+        assert df.iloc[0]["Dataset"] == "test"
+        assert df.iloc[0]["R"] == 5
+        assert df.iloc[0]["I"] == 2
+
     finally:
         import shutil
         if os.path.exists("save_test"):
@@ -426,36 +419,17 @@ def test_error_handling_in_processing():
 def test_csv_result_saving():
     """Test CSV result saving with various data types - hits lines 307-324."""
     processor = BatchProcessor(results_file="csv_test/results.csv")
-    
+
     try:
-        # Test saving different types of results
-        test_results = [
-            {
-                'dataset_name': 'test1',
-                'intrinsic_dimension': 2.5,
-                'raw_dimension': 5,
-                'drr': 0.5,
-                'processing_time': 1.23
-            },
-            {
-                'dataset_name': 'test2',
-                'intrinsic_dimension': 3.0,
-                'raw_dimension': 6,
-                'drr': 0.5,
-                'processing_time': 2.34
-            }
-        ]
-        
-        for result in test_results:
-            processor._save_result_to_csv(result)
-        
-        # Should have saved results
-        assert True
-        
-    except Exception:
-        # Allow failures but exercise CSV saving logic
-        assert True
-    
+        processor._initialize_results_file()
+        processor._save_result_to_csv("test1", 5, 2, 0.5)
+        processor._save_result_to_csv("test2", 6, 3, 0.5)
+
+        import pandas as pd
+        df = pd.read_csv("csv_test/results.csv")
+        assert len(df) == 2
+        assert list(df["Dataset"]) == ["test1", "test2"]
+
     finally:
         import shutil
         if os.path.exists("csv_test"):
