@@ -205,7 +205,8 @@ class DataProcessor:
                     data.drop(columns=[column], inplace=True)
                 else:
                     data[column] = numeric_data.fillna(median)
-                    logger.debug(f"Column '{column}': converted to numeric " f"(filled {numeric_data.isna().sum()} NaN values)")
+                    nan_count = numeric_data.isna().sum()
+                    logger.debug(f"Column '{column}': converted to numeric (filled {nan_count} NaN values)")
                 return True
         except Exception as e:
             logger.debug(f"Column '{column}': numeric conversion failed: {e}")
