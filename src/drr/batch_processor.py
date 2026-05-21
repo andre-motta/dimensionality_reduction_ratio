@@ -240,7 +240,8 @@ class BatchProcessor:
             csv_file = os.path.join(data_root, f"{dataset_path}.csv")
 
             resolved = os.path.realpath(csv_file)
-            if not resolved.startswith(os.path.realpath(data_root)):
+            root_realpath = os.path.realpath(data_root)
+            if os.path.commonpath([resolved, root_realpath]) != root_realpath:
                 error_msg = f"Path traversal detected: {dataset_path}"
                 logger.error(error_msg)
                 self._log_error(dataset_name, error_msg)

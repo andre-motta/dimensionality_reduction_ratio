@@ -203,10 +203,10 @@ class DataProcessor:
                 if pd.isna(median):
                     logger.warning(f"Column '{column}': all-NaN after conversion, dropping")
                     data.drop(columns=[column], inplace=True)
-                else:
-                    data[column] = numeric_data.fillna(median)
-                    nan_count = numeric_data.isna().sum()
-                    logger.debug(f"Column '{column}': converted to numeric (filled {nan_count} NaN values)")
+                    return False
+                data[column] = numeric_data.fillna(median)
+                nan_count = numeric_data.isna().sum()
+                logger.debug(f"Column '{column}': converted to numeric (filled {nan_count} NaN values)")
                 return True
         except Exception as e:
             logger.debug(f"Column '{column}': numeric conversion failed: {e}")
