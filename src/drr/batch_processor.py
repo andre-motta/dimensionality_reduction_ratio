@@ -10,7 +10,7 @@ import logging
 import os
 import traceback
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -66,7 +66,7 @@ class BatchProcessor:
 
         logger.info(f"Initialized BatchProcessor: results={results_file}, " f"errors={error_log_file}")
 
-    def process_datasets_from_file(self, datasets_file: str, data_root: str = "data") -> Dict[str, Any]:
+    def process_datasets_from_file(self, datasets_file: str, data_root: str = "data") -> dict[str, Any]:
         """
         Process all datasets listed in a configuration file.
 
@@ -153,7 +153,7 @@ class BatchProcessor:
             "results_file": self.results_file,
         }
 
-    def _parse_datasets_file(self, datasets_file: str) -> List[Dict[str, str]]:
+    def _parse_datasets_file(self, datasets_file: str) -> list[dict[str, str]]:
         """Parse the datasets configuration file."""
         logger.info(f"Parsing dataset configuration from {datasets_file}")
 
@@ -205,7 +205,7 @@ class BatchProcessor:
         logger.info(f"Parsed {len(datasets)} datasets from {datasets_file}")
         return datasets
 
-    def _get_processed_datasets(self) -> List[str]:
+    def _get_processed_datasets(self) -> list[str]:
         """Get list of datasets that have already been processed."""
         if not os.path.exists(self.results_file):
             return []
@@ -230,7 +230,7 @@ class BatchProcessor:
 
             logger.info(f"Initialized results file: {self.results_file}")
 
-    def _process_single_dataset(self, config: Dict[str, str], data_root: str) -> bool:
+    def _process_single_dataset(self, config: dict[str, str], data_root: str) -> bool:
         """Process a single dataset and save results."""
         dataset_name = config["name"]
         dataset_path = config["path"]
@@ -282,7 +282,7 @@ class BatchProcessor:
 
         logger.debug(f"Saved result for {dataset_name} to {self.results_file}")
 
-    def _log_error(self, dataset_name: str, error_message: str, traceback_str: Optional[str] = None):
+    def _log_error(self, dataset_name: str, error_message: str, traceback_str: str | None = None):
         """Log error to error log file."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 

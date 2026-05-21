@@ -17,7 +17,6 @@ Usage:
 import logging
 import os
 import sys
-from typing import Optional
 
 import click
 
@@ -26,7 +25,7 @@ from .data_processor import DataProcessor
 from .intrinsic_dimension_estimator import IntrinsicDimensionEstimator
 
 
-def setup_logging(level: str = "INFO", log_file: Optional[str] = None):
+def setup_logging(level: str = "INFO", log_file: str | None = None):
     """Setup logging configuration."""
     log_level = getattr(logging, level.upper())
 
