@@ -99,7 +99,7 @@ def estimator():
 @pytest.fixture
 def data_processor():
     """Create a default DataProcessor."""
-    return DataProcessor(max_rows=1000, seed=42)
+    return DataProcessor(max_rows_for_processing=1000, random_seed=42)
 
 
 @pytest.fixture

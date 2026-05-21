@@ -19,7 +19,7 @@ def test_estimator_creation():
     assert estimator.max_samples == 2000
     assert estimator.distance_metric == "l1"
     assert estimator.num_radii == 100
-    assert estimator.scipy_metric == "manhattan"
+    assert estimator.scipy_metric == "cityblock"
 
 
 def test_custom_parameters():
@@ -39,10 +39,10 @@ def test_custom_parameters():
 def test_distance_metric_mapping():
     """Test all supported distance metrics and their mappings."""
     metrics = {
-        "l1": "manhattan",
-        "l2": "euclidean", 
+        "l1": "cityblock",
+        "l2": "euclidean",
         "euclidean": "euclidean",
-        "manhattan": "manhattan",
+        "manhattan": "cityblock",
         "cosine": "cosine"
     }
     

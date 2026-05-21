@@ -33,6 +33,13 @@ class IntrinsicDimensionEstimator:
         num_radii (int): Number of radius values for correlation function (default: 100)
     """
 
+    _SMALL_DIM_THRESHOLD = 6
+    _LARGE_DIM_THRESHOLD = 15
+    _CONFIG_FALLBACK_RATIO = 0.3
+    _MEDIUM_FALLBACK_RATIO = 0.5
+    _BEHAVIOR_FALLBACK_RATIO = 0.7
+    _BEHAVIOR_FALLBACK_OFFSET = 5
+
     def __init__(self, max_samples: int = 2000, distance_metric: str = "l1", num_radii: int = 100):
         """
         Initialize the intrinsic dimension estimator.
@@ -48,10 +55,10 @@ class IntrinsicDimensionEstimator:
 
         # Map metric names to scipy distance metrics
         metric_mapping = {
-            "l1": "manhattan",
+            "l1": "cityblock",
             "l2": "euclidean",
             "euclidean": "euclidean",
-            "manhattan": "manhattan",
+            "manhattan": "cityblock",
             "cosine": "cosine",
         }
 
@@ -100,12 +107,15 @@ class IntrinsicDimensionEstimator:
         original_size = data.shape[0]
         if original_size > self.max_samples:
             logger.warning(f"Dataset is large ({original_size} samples). " f"Sampling {self.max_samples} for estimation")
-            np.random.seed(42)  # For reproducibility
-            indices = np.random.choice(original_size, self.max_samples, replace=False)
+            rng = np.random.default_rng(42)
+            indices = rng.choice(original_size, self.max_samples, replace=False)
             data = data[indices]
             logger.info(f"Using {self.max_samples} samples for estimation")
 
         original_dims = data.shape[1]
+
+        if original_dims == 0:
+            raise ValueError("Dataset has no features")
 
         try:
             # Calculate pairwise distances
@@ -123,8 +133,7 @@ class IntrinsicDimensionEstimator:
 
         except Exception as e:
             logger.error(f"Error during estimation: {str(e)}")
-            # Fallback estimation
-            fallback_dim = max(1, int(original_dims * 0.3))
+            fallback_dim = max(1, int(original_dims * self._CONFIG_FALLBACK_RATIO))
             drr = 1 - (fallback_dim / original_dims)
             logger.warning(f"Using fallback estimate: I={fallback_dim}")
             return original_dims, fallback_dim, drr
@@ -139,12 +148,9 @@ class IntrinsicDimensionEstimator:
         Returns:
             1D array of pairwise distances
         """
-        logger.debug(f"Computing {self.distance_metric} pairwise distances for {data.shape[0]} samples")
+        logger.debug(f"Computing {self.user_metric} pairwise distances for {data.shape[0]} samples")
 
-        if self.distance_metric == "l1":
-            distances = pdist(data, "cityblock")
-        else:  # l2
-            distances = pdist(data, "euclidean")
+        distances = pdist(data, self.scipy_metric)
 
         # Filter out invalid distances
         distances = distances[np.isfinite(distances)]
@@ -263,10 +269,9 @@ class IntrinsicDimensionEstimator:
             logger.debug(f"Log gradient range: [{np.min(log_gradients):.6f}, {np.max(log_gradients):.6f}]")
 
         # Dataset type heuristics
-        if original_dims <= 6:
-            # Small datasets - likely configuration data (expect high DRR)
+        if original_dims <= self._SMALL_DIM_THRESHOLD:
             return self._estimate_for_config_dataset(gradients, log_gradients, original_dims)
-        elif original_dims > 15:
+        elif original_dims > self._LARGE_DIM_THRESHOLD:
             # Large datasets - likely behavior data (expect low DRR)
             return self._estimate_for_behavior_dataset(gradients, log_gradients, original_dims)
         else:
@@ -287,8 +292,7 @@ class IntrinsicDimensionEstimator:
                     logger.debug(f"Config dataset: using log median {median_val:.3f} -> {result}")
                     return result
 
-        # Fallback for config datasets - expect high dimensionality reduction
-        result = max(1, int(original_dims * 0.3))
+        result = max(1, int(original_dims * self._CONFIG_FALLBACK_RATIO))
         logger.debug(f"Config dataset: using fallback {result}")
         return result
 
@@ -301,8 +305,7 @@ class IntrinsicDimensionEstimator:
                 logger.debug(f"Behavior dataset: using log max {max_log_gradient:.3f} -> {result}")
                 return result
 
-        # Fallback for behavior datasets - expect low dimensionality reduction
-        result = max(int(original_dims * 0.7), original_dims - 5)
+        result = max(int(original_dims * self._BEHAVIOR_FALLBACK_RATIO), original_dims - self._BEHAVIOR_FALLBACK_OFFSET)
         logger.debug(f"Behavior dataset: using fallback {result}")
         return result
 
@@ -315,7 +318,6 @@ class IntrinsicDimensionEstimator:
                 logger.debug(f"Medium dataset: using log median {median_val:.3f} -> {result}")
                 return result
 
-        # Fallback for medium datasets
-        result = max(1, int(original_dims * 0.5))
+        result = max(1, int(original_dims * self._MEDIUM_FALLBACK_RATIO))
         logger.debug(f"Medium dataset: using fallback {result}")
         return result

@@ -136,7 +136,7 @@ class DataProcessor:
             data_processed = data[feature_columns]
         else:
             logger.info("No goal variables found (columns ending with +, -, or !)")
-            data_processed = data.copy()
+            data_processed = data
 
         logger.info(f"Using {len(feature_columns)} feature columns for analysis")
 
@@ -199,9 +199,13 @@ class DataProcessor:
         try:
             numeric_data = pd.to_numeric(col_data, errors="coerce")
             if not numeric_data.isna().all():
-                # Fill NaN values with median for partially numeric columns
-                data[column] = numeric_data.fillna(numeric_data.median())
-                logger.debug(f"Column '{column}': converted to numeric " f"(filled {numeric_data.isna().sum()} NaN values)")
+                median = numeric_data.median()
+                if pd.isna(median):
+                    logger.warning(f"Column '{column}': all-NaN after conversion, dropping")
+                    data.drop(columns=[column], inplace=True)
+                else:
+                    data[column] = numeric_data.fillna(median)
+                    logger.debug(f"Column '{column}': converted to numeric " f"(filled {numeric_data.isna().sum()} NaN values)")
                 return True
         except Exception as e:
             logger.debug(f"Column '{column}': numeric conversion failed: {e}")
