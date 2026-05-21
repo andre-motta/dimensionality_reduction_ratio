@@ -6,7 +6,6 @@ including categorical encoding, goal variable removal, and data validation.
 """
 
 import logging
-from typing import List, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -43,7 +42,7 @@ class DataProcessor:
 
         logger.info(f"Initialized DataProcessor with max_rows={max_rows_for_processing}, " f"seed={random_seed}")
 
-    def process_dataset(self, data: Union[pd.DataFrame, np.ndarray, str]) -> Tuple[np.ndarray, dict]:
+    def process_dataset(self, data: pd.DataFrame | np.ndarray | str) -> tuple[np.ndarray, dict]:
         """
         Process a dataset for intrinsic dimension estimation.
 
@@ -113,7 +112,7 @@ class DataProcessor:
         logger.info(f"Sampled dataset shape: {sampled_data.shape}")
         return sampled_data
 
-    def _remove_goal_variables(self, data: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
+    def _remove_goal_variables(self, data: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
         """
         Remove goal variables (columns ending with +, -, or !).
 

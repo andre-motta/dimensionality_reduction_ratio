@@ -1,22 +1,12 @@
 """
 Intrinsic Dimension Estimation Module
 
-This module implements the correlation function-based intrinsic dimension estimation
-algorithm based on th        logger.info(
-            f"Computing {self.user_metric} pairwise distances for {data.shape[0]} samples"
-        )
-
-        # Use the mapped scipy metric name
-        distances = pdist(data, self.scipy_metric)
-
-        # Filter out invalid distances
-        distances = distances[np.isfinite(distances)]
-        distances = distances[distances > 0]odology, with improvements for robustness and
-large dataset handling.
+Implements the correlation function-based intrinsic dimension estimation
+algorithm based on the Levina-Bickel methodology, with improvements for
+robustness and large dataset handling.
 """
 
 import logging
-from typing import Tuple
 
 import numpy as np
 from scipy.spatial.distance import pdist
@@ -78,7 +68,7 @@ class IntrinsicDimensionEstimator:
             f"max_samples={max_samples}, num_radii={num_radii}"
         )
 
-    def estimate(self, data: np.ndarray) -> Tuple[int, int, float]:
+    def estimate(self, data: np.ndarray) -> tuple[int, int, float]:
         """
         Estimate the intrinsic dimensionality of the given dataset.
 
@@ -86,7 +76,7 @@ class IntrinsicDimensionEstimator:
             data: Input data array of shape (n_samples, n_features)
 
         Returns:
-            Tuple of (original_dimensions, intrinsic_dimension, drr) where:
+            tuple of (original_dimensions, intrinsic_dimension, drr) where:
             - original_dimensions: Number of features in input data
             - intrinsic_dimension: Estimated intrinsic dimensionality
             - drr: Dimensionality Reduction Ratio = 1 - (intrinsic_dim / original_dim)
