@@ -65,7 +65,7 @@ jobs:
 
     - name: Build package
       run: |
-        python -m build
+        python -m build --wheel
 
     - name: Verify package
       run: |
