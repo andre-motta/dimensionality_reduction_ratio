@@ -40,6 +40,11 @@ class IntrinsicDimensionEstimator:
     _BEHAVIOR_FALLBACK_RATIO = 0.7
     _BEHAVIOR_FALLBACK_OFFSET = 5
 
+    # I know from the paper https://arxiv.org/pdf/2006.00444, that the intrinsic dimension esimation works better
+    # when the dimension is < 20, but still cannot fully explain the 6 and 15. As far as I know, 46 out of 127 (~36%) datasets
+    # in the MOOT/optimize contains more than 15 dimensions.
+    # Also, any reason for the fallback ratios?
+
     def __init__(self, max_samples: int = 2000, distance_metric: str = "l1", num_radii: int = 100):
         """
         Initialize the intrinsic dimension estimator.
@@ -150,6 +155,15 @@ class IntrinsicDimensionEstimator:
         """
         logger.debug(f"Computing {self.user_metric} pairwise distances for {data.shape[0]} samples")
 
+        # I think there is a need to do normalization on the columns of the data before
+        # computing the pairwise distances. Otherwise, the distance metric may be dominated
+        # by features with larger scales.
+
+        # Feel free to use below, it is a simple one-liner normalization, but you can also
+        # use other normalization methods if you think it is better.
+        # keep = data.std(axis=0) > 1e-12
+        # data = (data[:, keep] - data[:, keep].mean(axis=0)) / data[:, keep].std(axis=0)
+
         distances = pdist(data, self.scipy_metric)
 
         # Filter out invalid distances
@@ -177,6 +191,13 @@ class IntrinsicDimensionEstimator:
             Estimated intrinsic dimension (integer)
         """
         logger.debug("Calculating correlation function and gradients")
+        # Since the distances are distributed sparsely, and the right tails
+        # (those longer distances) only weight a smaller portion of the correlation function,
+        # I think it would be better to use the 25th and 75th percentiles of the distances to
+        # set up the radius range,instead of using the min and max distances.
+        # r1, r2 = np.percentile(distances, [25, 75])
+        # min_dist = r1
+        # max_dist = r2
 
         # Set up radius range
         min_dist = np.min(distances)
@@ -282,6 +303,12 @@ class IntrinsicDimensionEstimator:
         """Estimate intrinsic dimension for configuration datasets (expect high correlation)."""
         if len(log_gradients) > 0:
             # Use middle range median for stability
+            # There could be a huge percentage of 0 gradients in the results
+            # which makes the median value to be 0.
+            # So I think it is better to filter out the gradients that are
+            # too small (e.g., < 1e-15) before calculating the median.
+            # log_gradients = log_gradients[np.abs(log_gradients) > 1e-15]
+
             mid_start = len(log_gradients) // 4
             mid_end = 3 * len(log_gradients) // 4
             if mid_end > mid_start:
@@ -300,7 +327,7 @@ class IntrinsicDimensionEstimator:
         """Estimate intrinsic dimension for behavior datasets (expect low correlation)."""
         if len(log_gradients) > 0:
             max_log_gradient = np.max(np.abs(log_gradients))
-            if original_dims * 0.5 < max_log_gradient < original_dims * 2:
+            if original_dims * 0.5 < max_log_gradient < original_dims * 2:  # The original_dims * 0.5 might be too tight.
                 result = max(1, round(max_log_gradient))
                 logger.debug(f"Behavior dataset: using log max {max_log_gradient:.3f} -> {result}")
                 return result
@@ -309,9 +336,27 @@ class IntrinsicDimensionEstimator:
         logger.debug(f"Behavior dataset: using fallback {result}")
         return result
 
+        # I applied the way config branch works, it makes the results closer to the paper v1's fig4 on those datasets
+        # with more than 15 dimensions.
+        # if len(log_gradients) > 0:
+        #     log_gradients = log_gradients[np.abs(log_gradients) > 1e-15]
+        #     mid_start = len(log_gradients) // 4
+        #     mid_end = 3 * len(log_gradients) // 4
+        #     median_log_gradient = np.median(log_gradients[mid_start:mid_end]) * 2 # I don't know why, but making the result times 2 just makes the estimation closer somehow (e.g., non-se task like adult.csv).
+        #     logger.debug(f"Behavior dataset: median log gradient = {median_log_gradient:.3f}") #
+        #     if original_dims * 0.5 < median_log_gradient < original_dims * 2:
+        #         result = max(1, round(median_log_gradient))
+        #         logger.debug(f"Behavior dataset: using log median {median_log_gradient:.3f} -> {result}")
+        #         return result
+
+        # result = max(int(original_dims * self._BEHAVIOR_FALLBACK_RATIO), original_dims - self._BEHAVIOR_FALLBACK_OFFSET)
+        # logger.debug(f"Behavior dataset: using fallback {result}")
+        # return result
+
     def _estimate_for_medium_dataset(self, gradients: np.ndarray, log_gradients: np.ndarray, original_dims: int) -> int:
         """Estimate intrinsic dimension for medium-sized datasets."""
         if len(log_gradients) > 0:
+            # log_gradients = log_gradients[np.abs(log_gradients) > 1e-15] # same filter here
             median_val = np.median(np.abs(log_gradients))
             if 1 < median_val < original_dims:
                 result = max(1, round(median_val))
