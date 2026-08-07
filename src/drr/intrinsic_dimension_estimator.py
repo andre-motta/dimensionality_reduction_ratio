@@ -342,7 +342,7 @@ class IntrinsicDimensionEstimator:
         #     log_gradients = log_gradients[np.abs(log_gradients) > 1e-15]
         #     mid_start = len(log_gradients) // 4
         #     mid_end = 3 * len(log_gradients) // 4
-        #     median_log_gradient = np.median(log_gradients[mid_start:mid_end]) * 2 # I don't know why, but making the result times 2 just makes the estimation closer somehow (e.g., non-se task like adult.csv).
+        #     median_log_gradient = np.median(log_gradients[mid_start:mid_end]) * 2 # I don't know why, but making the result times 2 just makes the estimation closer somehow (e.g., se task like nasa93dem.csv).
         #     logger.debug(f"Behavior dataset: median log gradient = {median_log_gradient:.3f}") #
         #     if original_dims * 0.5 < median_log_gradient < original_dims * 2:
         #         result = max(1, round(median_log_gradient))
