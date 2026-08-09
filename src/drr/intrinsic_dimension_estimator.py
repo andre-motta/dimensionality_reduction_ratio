@@ -161,8 +161,8 @@ class IntrinsicDimensionEstimator:
 
         # Feel free to use below, it is a simple one-liner normalization, but you can also
         # use other normalization methods if you think it is better.
-        # keep = data.std(axis=0) > 1e-12
-        # data = (data[:, keep] - data[:, keep].mean(axis=0)) / data[:, keep].std(axis=0)
+        keep = data.std(axis=0) > 1e-12
+        data = (data[:, keep] - data[:, keep].mean(axis=0)) / data[:, keep].std(axis=0)
 
         distances = pdist(data, self.scipy_metric)
 
@@ -307,7 +307,7 @@ class IntrinsicDimensionEstimator:
             # which makes the median value to be 0.
             # So I think it is better to filter out the gradients that are
             # too small (e.g., < 1e-15) before calculating the median.
-            # log_gradients = log_gradients[np.abs(log_gradients) > 1e-15]
+            log_gradients = log_gradients[np.abs(log_gradients) > 1e-15]
 
             mid_start = len(log_gradients) // 4
             mid_end = 3 * len(log_gradients) // 4
@@ -325,38 +325,40 @@ class IntrinsicDimensionEstimator:
 
     def _estimate_for_behavior_dataset(self, gradients: np.ndarray, log_gradients: np.ndarray, original_dims: int) -> int:
         """Estimate intrinsic dimension for behavior datasets (expect low correlation)."""
-        if len(log_gradients) > 0:
-            max_log_gradient = np.max(np.abs(log_gradients))
-            if original_dims * 0.5 < max_log_gradient < original_dims * 2:  # The original_dims * 0.5 might be too tight.
-                result = max(1, round(max_log_gradient))
-                logger.debug(f"Behavior dataset: using log max {max_log_gradient:.3f} -> {result}")
-                return result
-
-        result = max(int(original_dims * self._BEHAVIOR_FALLBACK_RATIO), original_dims - self._BEHAVIOR_FALLBACK_OFFSET)
-        logger.debug(f"Behavior dataset: using fallback {result}")
-        return result
-
-        # I applied the way config branch works, it makes the results closer to the paper v1's fig4 on those datasets
-        # with more than 15 dimensions.
         # if len(log_gradients) > 0:
-        #     log_gradients = log_gradients[np.abs(log_gradients) > 1e-15]
-        #     mid_start = len(log_gradients) // 4
-        #     mid_end = 3 * len(log_gradients) // 4
-        #     median_log_gradient = np.median(log_gradients[mid_start:mid_end]) * 2 # I don't know why, but making the result times 2 just makes the estimation closer somehow (e.g., se task like nasa93dem.csv).
-        #     logger.debug(f"Behavior dataset: median log gradient = {median_log_gradient:.3f}") #
-        #     if original_dims * 0.5 < median_log_gradient < original_dims * 2:
-        #         result = max(1, round(median_log_gradient))
-        #         logger.debug(f"Behavior dataset: using log median {median_log_gradient:.3f} -> {result}")
+        #     max_log_gradient = np.max(np.abs(log_gradients))
+        #     if original_dims * 0.5 < max_log_gradient < original_dims * 2:  # The original_dims * 0.5 might be too tight.
+        #         result = max(1, round(max_log_gradient))
+        #         logger.debug(f"Behavior dataset: using log max {max_log_gradient:.3f} -> {result}")
         #         return result
 
         # result = max(int(original_dims * self._BEHAVIOR_FALLBACK_RATIO), original_dims - self._BEHAVIOR_FALLBACK_OFFSET)
         # logger.debug(f"Behavior dataset: using fallback {result}")
         # return result
 
+        # I applied the way config branch works, it makes the results closer to the paper v1's fig4 on those datasets
+        # with more than 15 dimensions.
+        if len(log_gradients) > 0:
+            log_gradients = log_gradients[np.abs(log_gradients) > 1e-15]
+            mid_start = len(log_gradients) // 4
+            mid_end = 3 * len(log_gradients) // 4
+            median_log_gradient = (
+                np.median(log_gradients[mid_start:mid_end]) * 2
+            )  # I don't know why, but making the result times 2 just makes the estimation closer somehow (e.g., se task like nasa93dem.csv).
+            logger.debug(f"Behavior dataset: median log gradient = {median_log_gradient:.3f}")  #
+            if 1 < median_log_gradient < original_dims * 2:  # Let's make 1 as the left bound.
+                result = max(1, round(median_log_gradient))
+                logger.debug(f"Behavior dataset: using log median {median_log_gradient:.3f} -> {result}")
+                return result
+
+        result = max(int(original_dims * self._BEHAVIOR_FALLBACK_RATIO), original_dims - self._BEHAVIOR_FALLBACK_OFFSET)
+        logger.debug(f"Behavior dataset: using fallback {result}")
+        return result
+
     def _estimate_for_medium_dataset(self, gradients: np.ndarray, log_gradients: np.ndarray, original_dims: int) -> int:
         """Estimate intrinsic dimension for medium-sized datasets."""
         if len(log_gradients) > 0:
-            # log_gradients = log_gradients[np.abs(log_gradients) > 1e-15] # same filter here
+            log_gradients = log_gradients[np.abs(log_gradients) > 1e-15]  # same filter here
             median_val = np.median(np.abs(log_gradients))
             if 1 < median_val < original_dims:
                 result = max(1, round(median_val))
