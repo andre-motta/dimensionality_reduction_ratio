@@ -314,9 +314,9 @@ class IntrinsicDimensionEstimator:
             if mid_end > mid_start:
                 middle_gradients = log_gradients[mid_start:mid_end]
                 median_val = np.median(middle_gradients)
-                if (
-                    0.1 < abs(median_val) < original_dims
-                ):  # make the upper bound to be original_dims, because the intrinsic dimension should not exceed the original dimension.
+                if 0.1 < abs(median_val) < original_dims:
+                    # make the upper bound to be original_dims, because the intrinsic dimension
+                    # should not exceed the original dimension.
                     result = max(1, round(abs(median_val)))
                     logger.debug(f"Config dataset: using log median {median_val:.3f} -> {result}")
                     return result
@@ -346,7 +346,8 @@ class IntrinsicDimensionEstimator:
             mid_end = 3 * len(log_gradients) // 4
             median_log_gradient = (
                 np.median(log_gradients[mid_start:mid_end]) * 2
-            )  # I don't know why, but making the result times 2 just makes the estimation closer somehow (e.g., se task like nasa93dem.csv).
+            )  # I don't know why, but making the result times 2 just makes the estimation closer somehow
+            # (e.g., se task like nasa93dem.csv).
             logger.debug(f"Behavior dataset: median log gradient = {median_log_gradient:.3f}")  #
             if 1 < median_log_gradient < original_dims * 2:  # Let's make 1 as the left bound.
                 result = max(1, round(median_log_gradient))
