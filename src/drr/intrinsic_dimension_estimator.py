@@ -314,7 +314,7 @@ class IntrinsicDimensionEstimator:
             if mid_end > mid_start:
                 middle_gradients = log_gradients[mid_start:mid_end]
                 median_val = np.median(middle_gradients)
-                if 0.1 < abs(median_val) < 50:
+                if 0.1 < abs(median_val) < original_dims: # make the upper bound to be original_dims, because the intrinsic dimension should not exceed the original dimension.
                     result = max(1, round(abs(median_val)))
                     logger.debug(f"Config dataset: using log median {median_val:.3f} -> {result}")
                     return result
